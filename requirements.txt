@@ -14,3 +14,7 @@ uvicorn==0.20.0
 uvloop==0.17.0
 watchfiles==0.18.1
 websockets==10.4
+
+SQLAlchemy~=2.0.4
+kombu~=5.2.4
+celery~=5.2.7

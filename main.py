@@ -1,59 +1,24 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from fastapi import FastAPI
 
-import database
-import models
-
-app = FastAPI()
+from celery_utils import create_celery
+from api_routers import router
 
 
-class User(BaseModel):
-    id: int
-    name: str
-    cash: int
+def create_app() -> FastAPI:
+    current_app = FastAPI(title="Asynchronous tasks processing with Celery and RabbitMQ",
+                          description="Sample FastAPI Application to demonstrate Event "
+                                      "driven architecture with Celery and RabbitMQ",
+                          version="1.0.0", )
 
-    class Config:
-        orm_mode = True
+    current_app.celery_app = create_celery()
+    current_app.include_router(router)
+    return current_app
+
+
+app = create_app()
+celery = app.celery_app
 
 
 @app.get("/")
 async def root():
     return {"message": "Hello"}
-
-
-db = database.SessionLocal()
-
-
-@app.put("/input-cash", response_model=User, status_code=200)
-def input_cash(user_id: int, cash: int):
-    user = db.query(models.User).filter(models.User.id == user_id).first()
-    user.cash = user.cash + cash
-    db.commit()
-    return user
-
-
-@app.put("/output-cash", response_model=User, status_code=200)
-def output_cash(user_id: int, cash: int):
-    user = db.query(models.User).filter(models.User.id == user_id).first()
-    if user.cash < cash:
-        raise HTTPException(status_code=400, detail="Not enough funds")
-    user.cash = user.cash - cash
-    db.commit()
-    return user
-
-
-@app.post("/create-user", response_model=User, status_code=201)
-def create_user(user: User):
-    new_user = models.User(
-        name=user.name,
-        cash=user.cash
-    )
-
-    db_item = db.query(models.User).filter(user.name == new_user.name).first()
-    if db_item:
-        raise HTTPException(status_code=400, detail="User already exists")
-
-    db.add(new_user)
-    db.commit()
-
-    return new_user
