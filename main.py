@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from celery_utils import create_celery
+from celery_settings.celery_utils import create_celery
 from api_routers import router
 
 

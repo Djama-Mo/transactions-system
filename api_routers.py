@@ -1,8 +1,9 @@
 from fastapi import APIRouter
 from starlette.responses import JSONResponse
 
-from celery_tasks import input_cash_task, output_cash_task, db_api
-from celery_utils import get_task_info
+from celery_settings.celery_tasks import input_cash_task, output_cash_task
+from database import db_api
+from celery_settings.celery_utils import get_task_info
 
 router = APIRouter(prefix='/funds', tags=['Fund'], responses={404: {"description": "Not found"}})
 

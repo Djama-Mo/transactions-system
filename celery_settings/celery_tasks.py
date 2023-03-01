@@ -1,6 +1,6 @@
 from celery import shared_task
 
-import db_api
+from database import db_api
 
 
 @shared_task(bind=True, retry_backoff=True, retry_kwargs={"max_retries": 5},

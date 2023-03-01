@@ -3,11 +3,11 @@ import time
 from fastapi import HTTPException
 from pydantic import BaseModel
 
-import database
-import models
+from database.database_engine import SessionLocal
+from database.models import User as UserModel
 
 
-db = database.SessionLocal()
+db = SessionLocal()
 
 
 class User(BaseModel):
@@ -19,7 +19,7 @@ class User(BaseModel):
 
 
 def input_cash(user_id: int, cash: int):
-    user = db.query(models.User).filter(models.User.id == user_id).first()
+    user = db.query(UserModel).filter(UserModel.id == user_id).first()
     time.sleep(5)
     user.cash = user.cash + cash
     db.commit()
@@ -27,7 +27,7 @@ def input_cash(user_id: int, cash: int):
 
 
 def output_cash(user_id: int, cash: int):
-    user = db.query(models.User).filter(models.User.id == user_id).first()
+    user = db.query(UserModel).filter(UserModel.id == user_id).first()
     time.sleep(10)
     if user.cash < cash:
         raise HTTPException(status_code=400, detail="Not enough funds")
@@ -37,12 +37,12 @@ def output_cash(user_id: int, cash: int):
 
 
 def create_user(user: User):
-    new_user = models.User(
+    new_user = UserModel(
         name=user.name,
         cash=user.cash
     )
 
-    db_item = db.query(models.User).filter(models.User.name == new_user.name).first()
+    db_item = db.query(UserModel).filter(UserModel.name == new_user.name).first()
     if db_item:
         raise HTTPException(status_code=400, detail="User already exists")
 

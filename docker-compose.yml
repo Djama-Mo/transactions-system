@@ -1,0 +1,64 @@
+version: "3"
+
+services:
+  # BROKER
+  rabbitmq:
+    build: ./rabbitmq
+    container_name: rabbitmq-broker
+    networks:
+      - production-boilerplate
+    ports:
+      - "5673:5672"
+      - "15673:15672"
+
+  # WORKER
+  celery:
+    build: ./
+    restart: always
+    container_name: celery-worker
+    networks:
+      - production-boilerplate
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - CELERY_BACKEND_URL=rpc://
+      - C_FORCE_ROOT=true
+    command: celery -A main.celery worker --loglevel=info -Q fund --concurrency=1
+    depends_on:
+      - rabbitmq
+
+
+  # API
+  fastapi:
+    build: ./
+    container_name: fastapi
+    networks:
+      - production-boilerplate
+    env_file:
+      - ./.env
+    command: uvicorn main:app --host 0.0.0.0
+    ports:
+      - "80:8000"
+    depends_on:
+      - rabbitmq
+      - celery
+      - db
+
+  # DATABASE
+  db:
+    container_name: db-postgres
+    image: postgres:14-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - production-boilerplate
+
+networks:
+  production-boilerplate:
+    driver: bridge
+
+volumes:
+  postgres_data:

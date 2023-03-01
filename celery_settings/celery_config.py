@@ -7,16 +7,16 @@ def route_task(name, args, kwargs, options, task=None, **kw):
     if ":" in name:
         queue, _ = name.split(":")
         return {"queue": queue}
-    return {"queue": "celery"}
+    return {"queue": "celery_settings"}
 
 
 class BaseConfig:
-    CELERY_BROKER_URL: str = os.environ.get("CELERY_BROKER_URL", "amqp://guest:guest@localhost:5672//")
+    CELERY_BROKER_URL: str = os.environ.get("CELERY_BROKER_URL", "amqp://guest:guest@localhost:5673//")
     CELERY_RESULT_BACKEND: str = os.environ.get("CELERY_RESULT_BACKEND", "rpc://")
 
     CELERY_TASK_QUEUES: list = (
         # default queue
-        Queue("celery"),
+        Queue("celery_settings"),
     )
 
     CELERY_TASK_ROUTES = (route_task,)
