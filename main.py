@@ -5,10 +5,7 @@ from api_routers import router
 
 
 def create_app() -> FastAPI:
-    current_app = FastAPI(title="Asynchronous tasks processing with Celery and RabbitMQ",
-                          description="Sample FastAPI Application to demonstrate Event "
-                                      "driven architecture with Celery and RabbitMQ",
-                          version="1.0.0", )
+    current_app = FastAPI()
 
     current_app.celery_app = create_celery()
     current_app.include_router(router)
